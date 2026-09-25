@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mon TBI</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#eef2f6;color:#182230}button{cursor:pointer;padding:10px;border:1px solid #ccd2da;border-radius:9px;background:#fff}.primary{background:#2563eb;color:#fff}.hidden{display:none!important}header{padding:10px;background:#fff;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-bottom:1px solid #ddd}.spacer{flex:1}#home{padding:20px;max-width:1000px;margin:auto;min-height:100vh}#auth{min-height:0}#editor.hidden,#home.hidden,#auth.hidden{display:none!important}.card{background:#fff;padding:15px;border:1px solid #ddd;border-radius:12px;margin-top:12px}.file{padding:9px;border:1px solid #ddd;border-radius:9px;background:#fff;cursor:pointer}.file input{display:none}#editor{height:100vh;display:flex;flex-direction:column}main{flex:1;min-height:0;display:grid;grid-template-columns:260px 1fr}aside{padding:12px;background:#fff;overflow:auto}.area{display:flex;flex-direction:column;min-height:0}.toolbar{padding:8px;display:flex;gap:6px;flex-wrap:wrap;background:#fff}.stage{flex:1;background:#20242a;overflow:auto;display:flex;justify-content:center;padding:10px}.wrap{position:relative;background:#fff;height:max-content}.wrap canvas{display:block}.correct,.ink,.overlay{position:absolute;inset:0}.correct{z-index:2;pointer-events:none}.overlay{z-index:4}.ink{z-index:6;pointer-events:none}.drawActive .ink{pointer-events:auto;touch-action:none;user-select:none;-webkit-user-select:none}.zone{position:absolute;border:2px dashed #2563eb;background:#2563eb18;cursor:move;touch-action:none}.zone .resize{position:absolute;width:18px;height:18px;right:-9px;bottom:-9px;border-radius:50%;background:#2563eb;border:2px solid #fff;cursor:nwse-resize}.badge{position:absolute;top:-18px;background:#2563eb;color:#fff;padding:2px 5px}.tbi{display:none}.presenting header,.presenting aside,.presenting .toolbar{display:none}.presenting main{display:block}.presenting .area,.presenting .stage{height:100vh}.presenting .stage{overflow:hidden;align-items:center;padding:0}.presenting .wrap{flex:0 0 auto}.presenting .tbi{display:flex;position:fixed;left:8px;top:50%;transform:translateY(-50%);z-index:20;flex-direction:column;gap:5px;background:#fff;padding:7px;border-radius:12px;width:82px}.presenting .zone{display:none}.patch{position:absolute;z-index:3;pointer-events:none}.toolActive{outline:3px solid #2563eb;background:#dbeafe!important}.colorDot{width:28px;height:28px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px #777;padding:0;align-self:center}.toolGroup{display:flex;flex-direction:column;align-items:center;gap:2px}.geo{position:fixed;z-index:30;touch-action:none;user-select:none}.aristo{width:220px;height:150px;left:120px;top:120px;border-left:14px solid rgba(30,144,255,.55);border-bottom:14px solid rgba(30,144,255,.55);clip-path:polygon(0 0,0 100%,100% 100%);transform-origin:30px 120px}.compass{left:180px;top:140px;width:180px;height:180px;border:2px dashed rgba(30,144,255,.8);border-radius:50%;background:rgba(30,144,255,.06)}.geoHandle{position:absolute;width:22px;height:22px;border-radius:50%;background:#2563eb;border:3px solid white;right:-11px;top:-11px}.geoCenter{position:absolute;width:14px;height:14px;border-radius:50%;background:#111;left:50%;top:50%;transform:translate(-50%,-50%)}
+</style></head><body>
+<section id="auth" style="max-width:430px;margin:48px auto;background:#fff;border:1px solid #ddd;border-radius:14px;padding:22px"><h2>Mon TBI</h2><p>Connecte-toi pour retrouver les mêmes tableaux sur tous tes appareils.</p><input id="email" type="email" placeholder="E-mail" style="width:100%;padding:11px;margin:5px 0"><input id="password" type="password" placeholder="Mot de passe" style="width:100%;padding:11px;margin:5px 0 12px"><button id="login" class="primary">Se connecter</button> <button id="signup">Créer mon compte</button><p id="authmsg"></p></section>
+<section id="home" class="hidden"><h1>Mon TBI</h1><button id="new" class="primary">＋ Nouveau tableau</button><div id="boards"></div></section>
+<section id="editor" class="hidden"><header><button id="back">← Accueil</button><b id="title"></b><label class="file">PDF élève<input id="studentFile" type="file" accept="application/pdf"></label><label class="file">PDF corrigé<input id="correctFile" type="file" accept="application/pdf"></label><div class="spacer"></div><button id="present" class="primary">Mode TBI</button></header>
+<main><aside><b>Réponses de cette page</b><p>Encadre les réponses dans l'ordre de révélation.</p><div id="list"></div></aside><section class="area"><div class="toolbar"><button id="prev">← Page</button><span id="info"></span><button id="next">Page →</button><button id="minus">−</button><button id="plus">+</button><label><input id="show" type="checkbox"> Voir corrigé</label></div><div class="stage"><div id="empty">Charge les deux PDF.</div><div id="wrap" class="wrap hidden"><canvas id="student"></canvas><canvas id="correct" class="correct"></canvas><canvas id="ink" class="ink"></canvas><div id="overlay" class="overlay"></div></div></div>
+<div class="tbi"><button id="tp">◀ Page</button><button id="tn">Page ▶</button><button id="backAns">↶ Rép.</button><button id="answer" class="primary">Réponse</button><span id="count"></span><div class="toolGroup"><button id="penDot" class="colorDot" title="Couleur crayon"></button><button id="pen">✏️</button></div><div class="toolGroup"><button id="hiliteDot" class="colorDot" title="Couleur fluo"></button><button id="hilite">🖍️</button></div><button id="eraser">🧽</button><button id="tools">🧰</button><button id="clear">🗑</button><button id="fit">▣ Page</button><button id="fitWidth">↔ Largeur</button><button id="full">⛶</button><button id="quit">✕</button><input id="penColor" type="color" value="#e11d48" class="hidden"><input id="hiliteColor" type="color" value="#fff176" class="hidden"><div id="toolMenu" class="hidden" style="position:fixed;left:95px;top:50%;z-index:35;background:white;padding:8px;border-radius:10px"><button id="aristoBtn">📐 Aristo</button><button id="compassBtn">🧭 Compas</button></div></div><div id="aristoGeo" class="geo aristo hidden"><span class="geoHandle"></span></div><div id="compassGeo" class="geo compass hidden"><span class="geoCenter"></span><span class="geoHandle"></span></div></section></main></section>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+const SUPABASE_URL='https://tfaxiagtabnyfqsxmull.supabase.co',SUPABASE_KEY='sb_publishable_AkucTXua3cQYSxVxbv4NBQ_nRm90uY8';
+const sb=supabase.createClient(SUPABASE_URL,SUPABASE_KEY),$=x=>document.getElementById(x);let user=null,boards=[],idx=-1,zones={},sd=null,cd=null,page=1,scale=1.2,revealed=0,presenting=false,create=false,start=null,inkMode='',inking=false,lx=0,ly=0,studentPath=null,correctPath=null,fitMode='page',penColor=localStorage.getItem('tbiPenColor')||'#e11d48',hiliteColor=localStorage.getItem('tbiHiliteColor')||'#fff176';
+const sc=$('student'),cc=$('correct'),ic=$('ink'),sctx=sc.getContext('2d'),cctx=cc.getContext('2d'),ictx=ic.getContext('2d'),ov=$('overlay');
+function msg(t){$('authmsg').textContent=t}
+async function refresh(){const {data:{session}}=await sb.auth.getSession();user=session?.user||null;$('auth').classList.toggle('hidden',!!user);if(!user){$('auth').style.display='block';$('home').style.display='none';$('editor').style.display='none'}else if(idx<0){$('auth').style.display='none';$('home').classList.remove('hidden');$('home').style.display='block';$('editor').classList.add('hidden');$('editor').style.display='none'}if(user)await loadBoards()}
+$('login').onclick=async()=>{msg('Connexion…');const {error}=await sb.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:'');if(!error)refresh()};
+$('signup').onclick=async()=>{msg('Création…');const {data,error}=await sb.auth.signUp({email:$('email').value.trim(),password:$('password').value});msg(error?error.message:(data.session?'':'Compte créé. Confirme ton e-mail puis connecte-toi.'));if(data.session)refresh()};
+async function loadBoards(){const {data,error}=await sb.from('tbi_boards').select('*').eq('user_id',user.id).order('updated_at',{ascending:false});if(error)return alert('Erreur cloud : '+error.message);boards=data||[];home()}
+function home(){let x=$('boards');x.innerHTML='';if(!boards.length)x.innerHTML='<p>Aucun tableau.</p>';boards.forEach((b,i)=>{let d=document.createElement('div');d.className='card';d.innerHTML='<b>'+String(b.name).replace(/[<>]/g,'')+'</b><br><br>';let o=document.createElement('button');o.textContent='Ouvrir / préparer';o.onclick=()=>open(i);
+let del=document.createElement('button');del.textContent='Supprimer';del.style.marginLeft='8px';del.style.color='#b42318';
+del.onclick=async()=>{if(!confirm('Supprimer ce tableau ?'))return;
+ const paths=[b.student_path,b.correct_path].filter(Boolean); if(paths.length) await sb.storage.from('tbi-pdfs').remove(paths);
+ const {error}=await sb.from('tbi_boards').delete().eq('id',b.id).eq('user_id',user.id);
+ if(error)return alert('Suppression impossible : '+error.message); if(idx===i)idx=-1; await loadBoards()};
+d.append(o,del);x.append(d)})}
+$('new').onclick=async()=>{let n=prompt('Nom du tableau :','Nouveau tableau');if(n===null)return;const {data,error}=await sb.from('tbi_boards').insert({user_id:user.id,name:n||'Nouveau tableau',zones:{}}).select().single();if(error)return alert(error.message);await loadBoards();open(boards.findIndex(b=>b.id===data.id))}
+async function storageDoc(path){if(!path)return null;const {data,error}=await sb.storage.from('tbi-pdfs').download(path);if(error)return null;return pdfjsLib.getDocument({data:await data.arrayBuffer()}).promise}
+async function open(i){
+ // Nettoyage complet avant de changer de tableau
+ presenting=false; document.body.classList.remove('presenting','drawActive');
+ create=false; start=null; revealed=0; inkMode=''; page=1; scale=1.2;
+ $('wrap').querySelectorAll('.patch').forEach(x=>x.remove());
+ sctx.clearRect(0,0,sc.width||1,sc.height||1); cctx.clearRect(0,0,cc.width||1,cc.height||1); ictx.clearRect(0,0,ic.width||1,ic.height||1);
+ sd=null; cd=null; studentPath=null; correctPath=null; zones={};
+ idx=i;$('auth').style.display='none';$('home').style.display='none';$('editor').style.display='flex';let b=boards[i];zones=b.zones||{};studentPath=b.student_path;correctPath=b.correct_path;$('title').textContent=b.name;$('home').classList.add('hidden');$('editor').classList.remove('hidden');page=1;sd=await storageDoc(studentPath);cd=await storageDoc(correctPath);
+if(sd||cd){$('empty').classList.add('hidden');$('wrap').classList.remove('hidden');await fitPreparePage();await render()}
+else{$('wrap').classList.add('hidden');$('empty').classList.remove('hidden');$('empty').textContent='Charge le PDF élève puis le PDF corrigé.'}}
+$('back').onclick=async()=>{
+ presenting=false;document.body.classList.remove('presenting','drawActive');create=false;start=null;revealed=0;inkMode='';
+ sd=null;cd=null;studentPath=null;correctPath=null;zones={};idx=-1;
+ $('wrap').querySelectorAll('.patch').forEach(x=>x.remove());$('wrap').classList.add('hidden');$('empty').classList.remove('hidden');
+ $('editor').classList.add('hidden');$('editor').style.display='none';$('home').classList.remove('hidden');$('home').style.display='block';await loadBoards()}
+async function saveBoard(){if(idx<0)return;boards[idx].zones=zones;await sb.from('tbi_boards').update({zones,student_path:studentPath,correct_path:correctPath,updated_at:new Date().toISOString()}).eq('id',boards[idx].id)}
+async function load(f,k){if(!f)return;try{
+ const bytes=await f.arrayBuffer(); const d=await pdfjsLib.getDocument({data:bytes.slice(0)}).promise;
+ if(k==='s')sd=d; else cd=d;
+ $('empty').classList.add('hidden');$('wrap').classList.remove('hidden'); await fitPreparePage(); await render();
+ const path=user.id+'/'+boards[idx].id+'/'+(k==='s'?'student':'correct')+'.pdf';
+ const {error}=await sb.storage.from('tbi-pdfs').upload(path,f,{upsert:true,contentType:'application/pdf'});
+ if(error){console.warn(error);alert('Le PDF est affiché, mais sa synchronisation cloud a échoué : '+error.message);return}
+ if(k==='s')studentPath=path;else correctPath=path; await saveBoard();
+}catch(e){console.error(e);alert('Impossible d’afficher ce PDF : '+(e?.message||e))}}
+$('studentFile').onchange=e=>load(e.target.files[0],'s');$('correctFile').onchange=async e=>{await load(e.target.files[0],'c');$('show').checked=true;if(cd)cc.style.opacity='1'};
+function cz(){return zones[page]||(zones[page]=[])}function max(){return sd&&cd?Math.min(sd.numPages,cd.numPages):(sd?.numPages||cd?.numPages||0)}
+async function fitPreparePage(){if(presenting)return;let base=sd||cd;if(!base)return;let pg=await base.getPage(page),v=pg.getViewport({scale:1}),stage=document.querySelector('.stage');let sw=Math.max(100,stage.clientWidth-20),sh=Math.max(100,stage.clientHeight-20);scale=Math.max(.2,Math.min(4,Math.min(sw/v.width,sh/v.height)));}
+async function render(){
+ const renderIdx=idx,base=sd||cd;if(!base)return; if(page>max())page=max()||1;
+ const bp=await base.getPage(page);if(renderIdx!==idx)return;const v=bp.getViewport({scale});
+ const W=Math.ceil(v.width),H=Math.ceil(v.height);sc.width=cc.width=ic.width=W;sc.height=cc.height=ic.height=H;
+ $('wrap').style.width=W+'px';$('wrap').style.height=H+'px';ov.style.width=W+'px';ov.style.height=H+'px';
+ sctx.clearRect(0,0,W,H);cctx.clearRect(0,0,W,H);
+ if(sd){const sp=await sd.getPage(page);if(renderIdx!==idx)return;const sv=sp.getViewport({scale});await sp.render({canvasContext:sctx,viewport:sv}).promise;if(renderIdx!==idx)return}
+ else {sctx.fillStyle='white';sctx.fillRect(0,0,W,H)}
+ if(cd&&page<=cd.numPages){const cp=await cd.getPage(page);if(renderIdx!==idx)return;const cv=cp.getViewport({scale});await cp.render({canvasContext:cctx,viewport:cv}).promise;if(renderIdx!==idx)return}
+ cc.style.opacity=presenting?'0':(cd&&$('show').checked?'1':'0');zonesDraw();patches();$('info').textContent='Page '+page+' / '+max();count()
+}
+function zonesDraw(){ov.innerHTML='';if(!presenting)cz().forEach((z,i)=>{let d=document.createElement('div');d.className='zone';d.style.cssText=`left:${z.x*100}%;top:${z.y*100}%;width:${z.w*100}%;height:${z.h*100}%`;d.innerHTML='<span class="badge">'+(i+1)+'</span><span class="resize"></span>';d.onpointerdown=e=>{e.stopPropagation();let r=ov.getBoundingClientRect(),sx=e.clientX,sy=e.clientY,orig={...z},resize=e.target.classList.contains('resize');d.setPointerCapture(e.pointerId);d.onpointermove=m=>{let dx=(m.clientX-sx)/r.width,dy=(m.clientY-sy)/r.height;if(resize){z.w=Math.max(.01,Math.min(1-z.x,orig.w+dx));z.h=Math.max(.01,Math.min(1-z.y,orig.h+dy))}else{z.x=Math.max(0,Math.min(1-z.w,orig.x+dx));z.y=Math.max(0,Math.min(1-z.h,orig.y+dy))}d.style.left=z.x*100+'%';d.style.top=z.y*100+'%';d.style.width=z.w*100+'%';d.style.height=z.h*100+'%'};d.onpointerup=()=>{d.onpointermove=null;boards[idx].zones=zones;saveBoard();zonesDraw()}};ov.append(d)});let l=$('list');l.innerHTML='';cz().forEach((z,i)=>{let d=document.createElement('div');d.textContent='Réponse '+(i+1)+' ';let b=document.createElement('button');b.textContent='Supprimer';b.onclick=()=>{cz().splice(i,1);boards[idx].zones=zones;saveBoard();zonesDraw()};d.append(b);l.append(d)})}
+ov.onpointerdown=e=>{if(presenting||e.target!==ov)return;let r=ov.getBoundingClientRect();start={x:(e.clientX-r.left)/r.width,y:(e.clientY-r.top)/r.height};ov.setPointerCapture(e.pointerId)}
+ov.onpointerup=e=>{if(!start||presenting)return;let r=ov.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height,w=Math.abs(x-start.x),h=Math.abs(y-start.y);if(w>.01&&h>.01){cz().push({x:Math.min(x,start.x),y:Math.min(y,start.y),w,h});boards[idx].zones=zones;saveBoard();zonesDraw()}start=null}
+function patches(){$('wrap').querySelectorAll('.patch').forEach(x=>x.remove());if(!presenting||!cd)return;cz().slice(0,revealed).forEach(z=>{let x=z.x*cc.width,y=z.y*cc.height,w=z.w*cc.width,h=z.h*cc.height,p=document.createElement('canvas');p.className='patch';p.width=w;p.height=h;p.style.left=x+'px';p.style.top=y+'px';p.getContext('2d').drawImage(cc,x,y,w,h,0,0,w,h);$('wrap').insertBefore(p,ov)})}
+async function fit(which='page'){if(!presenting)return;let base=sd||cd;if(!base)return;let pg=await base.getPage(page),v=pg.getViewport({scale:1}),stage=document.querySelector('.stage'),pad=12;let sw=Math.max(100,stage.clientWidth-pad),sh=Math.max(100,stage.clientHeight-pad);fitMode=which;scale=which==='width'?sw/v.width:Math.min(sw/v.width,sh/v.height);scale=Math.max(.2,Math.min(4,scale));await render();stage.scrollTop=0;stage.scrollLeft=0}
+async function gp(d){let n=Math.max(1,Math.min(max(),page+d));if(n!==page){page=n;revealed=0;if(presenting){await render()}else{await fitPreparePage();await render()}}}async function zoom(d){scale=Math.max(.5,Math.min(3.5,scale+d));render()}
+$('prev').onclick=()=>gp(-1);$('next').onclick=()=>gp(1);$('tp').onclick=()=>gp(-1);$('tn').onclick=()=>gp(1);$('minus').onclick=()=>zoom(-.2);$('plus').onclick=()=>zoom(.2);$('show').onchange=()=>cc.style.opacity=$('show').checked?'1':'0';
+$('present').onclick=async()=>{if(!sd||!cd)return alert('Charge les deux PDF.');presenting=true;revealed=0;fitMode='page';document.body.classList.add('presenting');await fit('page')}
+$('quit').onclick=async()=>{presenting=false;document.body.classList.remove('presenting');document.body.classList.remove('drawActive');await fitPreparePage();await render()}
+function count(){$('count').textContent=revealed+'/'+cz().length}$('answer').onclick=()=>{revealed=Math.min(cz().length,revealed+1);patches();count()};$('backAns').onclick=()=>{revealed=Math.max(0,revealed-1);patches();count()}
+function mode(m){
+  inkMode=(inkMode===m?'':m); document.body.classList.toggle('drawActive',!!inkMode);
+  ['pen','hilite','eraser'].forEach(id=>$(id).classList.toggle('toolActive',inkMode===id));
+}
+$('penColor').value=penColor;$('hiliteColor').value=hiliteColor;
+function syncDots(){$('penDot').style.background=penColor;$('hiliteDot').style.background=hiliteColor} syncDots();
+$('penDot').onclick=()=>$('penColor').click(); $('hiliteDot').onclick=()=>$('hiliteColor').click();
+$('penColor').oninput=$('penColor').onchange=()=>{penColor=$('penColor').value;localStorage.setItem('tbiPenColor',penColor);syncDots()};
+$('hiliteColor').oninput=$('hiliteColor').onchange=()=>{hiliteColor=$('hiliteColor').value;localStorage.setItem('tbiHiliteColor',hiliteColor);syncDots()};
+$('pen').onclick=()=>mode('pen');$('hilite').onclick=()=>mode('hilite');$('eraser').onclick=()=>mode('eraser');
+$('clear').onclick=()=>ictx.clearRect(0,0,ic.width,ic.height);$('fit').onclick=()=>fit('page');$('fitWidth').onclick=()=>fit('width');
+$('tools').onclick=()=>$('toolMenu').classList.toggle('hidden');
+function toggleGeo(id){$(id).classList.toggle('hidden');$('toolMenu').classList.add('hidden')}
+$('aristoBtn').onclick=()=>toggleGeo('aristoGeo');$('compassBtn').onclick=()=>toggleGeo('compassGeo');
+function draggableGeo(el, compass=false){let moving=false,sx=0,sy=0,ox=0,oy=0;
+ el.addEventListener('pointerdown',e=>{if(e.target.classList.contains('geoHandle'))return;moving=true;sx=e.clientX;sy=e.clientY;ox=el.offsetLeft;oy=el.offsetTop;el.setPointerCapture(e.pointerId);e.preventDefault()});
+ el.addEventListener('pointermove',e=>{if(!moving)return;el.style.left=(ox+e.clientX-sx)+'px';el.style.top=(oy+e.clientY-sy)+'px';e.preventDefault()});
+ el.addEventListener('pointerup',()=>moving=false);
+ let h=el.querySelector('.geoHandle'),drag=false,cx=0,cy=0;
+ h.addEventListener('pointerdown',e=>{drag=true;let r=el.getBoundingClientRect();cx=r.left+r.width/2;cy=r.top+r.height/2;h.setPointerCapture(e.pointerId);e.stopPropagation();e.preventDefault()});
+ h.addEventListener('pointermove',e=>{if(!drag)return;if(compass){let rad=Math.max(35,Math.hypot(e.clientX-cx,e.clientY-cy));el.style.width=el.style.height=(rad*2)+'px';el.style.left=(cx-rad)+'px';el.style.top=(cy-rad)+'px'}else{let a=Math.atan2(e.clientY-cy,e.clientX-cx)*180/Math.PI;el.style.transform='rotate('+a+'deg)'}e.preventDefault()});
+ h.addEventListener('pointerup',()=>drag=false);
+}
+draggableGeo($('aristoGeo'));draggableGeo($('compassGeo'),true);
+$('compassGeo').addEventListener('dblclick',()=>{let r=$('compassGeo').getBoundingClientRect(),cr=ic.getBoundingClientRect(),cx=(r.left+r.width/2-cr.left)*ic.width/cr.width,cy=(r.top+r.height/2-cr.top)*ic.height/cr.height,rad=(r.width/2)*ic.width/cr.width;ictx.save();ictx.strokeStyle=penColor;ictx.lineWidth=4;ictx.beginPath();ictx.arc(cx,cy,rad,0,Math.PI*2);ictx.stroke();ictx.restore()});
+function inkPoint(e){let r=ic.getBoundingClientRect();return{x:(e.clientX-r.left)*ic.width/r.width,y:(e.clientY-r.top)*ic.height/r.height}}
+function drawInkPoint(e){let q=inkPoint(e);ictx.save();ictx.lineCap='round';ictx.lineJoin='round';if(inkMode==='eraser'){ictx.globalCompositeOperation='destination-out';ictx.lineWidth=28}else{ictx.globalCompositeOperation='source-over';ictx.strokeStyle=inkMode==='hilite'?hiliteColor:penColor;ictx.globalAlpha=inkMode==='hilite'?.35:1;ictx.lineWidth=inkMode==='hilite'?18:4}ictx.beginPath();ictx.moveTo(lx,ly);ictx.lineTo(q.x,q.y);ictx.stroke();ictx.restore();lx=q.x;ly=q.y}
+ic.addEventListener('pointerdown',e=>{if(!presenting||!inkMode)return;e.preventDefault();inking=true;let q=inkPoint(e);lx=q.x;ly=q.y;try{ic.setPointerCapture(e.pointerId)}catch(_){}},{passive:false});
+ic.addEventListener('pointermove',e=>{if(!inking)return;e.preventDefault();let events=e.getCoalescedEvents?e.getCoalescedEvents():[e];for(const ev of events)drawInkPoint(ev)},{passive:false});
+function endInk(e){if(!inking)return;e.preventDefault();inking=false;try{if(ic.hasPointerCapture(e.pointerId))ic.releasePointerCapture(e.pointerId)}catch(_){}}
+ic.addEventListener('pointerup',endInk,{passive:false});ic.addEventListener('pointercancel',endInk,{passive:false});ic.addEventListener('lostpointercapture',()=>inking=false);
+document.addEventListener('keydown',e=>{if(!presenting)return;if(['ArrowRight','ArrowLeft','ArrowUp','ArrowDown'].includes(e.key))e.preventDefault();if(e.key==='ArrowRight')$('answer').click();else if(e.key==='ArrowLeft')$('backAns').click();else if(e.key==='ArrowUp')gp(1).then(()=>fit(fitMode));else if(e.key==='ArrowDown')gp(-1).then(()=>fit(fitMode))});
+$('full').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen?.();
+sb.auth.onAuthStateChange(()=>setTimeout(refresh,0));refresh();
+</script></body></html>
